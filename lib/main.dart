@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:health_notes/layouts/random_grid.dart';
 import 'package:health_notes/widgets/notes/note.dart';
 import 'package:health_notes/widgets/notes/trash.dart';
+import 'package:health_notes/widgets/util/textbox_popup_button.dart';
 
 void main() {
   runApp(MyApp());
@@ -19,6 +20,12 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatelessWidget {
   const MyHomePage({Key? key}) : super(key: key);
+
+  static final TextEditingController controller = TextEditingController();
+  static final VoidCallback addNote = () => {
+    print(controller.text),
+    controller.clear(),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +49,14 @@ class MyHomePage extends StatelessWidget {
                 flex: 8,
               ),
               Expanded(
-                child: Align(
-                  child: TrashCan(),
-                  alignment: Alignment.centerRight,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextboxPopupButton(
+                      onTextSubmit: addNote,
+                      controller: controller,),
+                    TrashCan(),
+                  ],
                 ),
                 flex: 2,
               ),
