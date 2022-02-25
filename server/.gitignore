@@ -1,0 +1,6 @@
+# Server test file
+client.js
+data/
+
+# Node.js related
+node_modules/
