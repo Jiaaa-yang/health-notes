@@ -10,8 +10,7 @@ const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database("data/notes.db");
 
 db.run(`CREATE TABLE IF NOT EXISTS notes
-        (id INTEGER PRIMARY KEY,
-         content TEXT)`, err => {
+        (content TEXT)`, err => {
     if (err) console.log(err);
 });
 
@@ -25,7 +24,7 @@ app.get('/notes', (req, res) => {
 // Add a note with id and text content into database
 app.post('/notes', (req, res) => {
     let data = req.body;
-    db.run("INSERT INTO notes (id, content) VALUES (?, ?)", [data.id, data.content], err => {
+    db.run("INSERT INTO notes (content) VALUES (?)", [data.content], err => {
         if (err) console.log(err);
     })
     res.sendStatus(200);

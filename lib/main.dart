@@ -1,8 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:health_notes/layouts/random_grid.dart';
 import 'package:health_notes/widgets/notes/note.dart';
 import 'package:health_notes/widgets/notes/trash.dart';
 import 'package:health_notes/widgets/util/textbox_popup_button.dart';
+
+// Alias host name for android emulator, with server
+// listening at port 3000
+const SERVER_BASE_URL = "http://10.0.2.2:3000";
 
 void main() {
   runApp(MyApp());
@@ -18,17 +26,35 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
 
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+
   static final TextEditingController controller = TextEditingController();
-  static final VoidCallback addNote = () => {
-    print(controller.text),
-    controller.clear(),
-  };
+
+  late Future<List<Widget>> notes;
+
+  @override
+  void initState() {
+    super.initState();
+    this.notes = fetchAllNotes();
+  }
 
   @override
   Widget build(BuildContext context) {
+    void addNewNote() {
+      addNote(controller.text);
+      controller.clear();
+      setState(() {
+        this.notes = fetchAllNotes();
+      });
+    }
+
     return Scaffold(
       backgroundColor: Color(0xFFF9E4D4),
       appBar: AppBar(
@@ -41,9 +67,15 @@ class MyHomePage extends StatelessWidget {
             children: [
               Expanded(
                 child: Container(
-                  child: RandomGrid(
-                    children: this.buildStubNotes(),
-                    crossAxisCount: 12,
+                  child: FutureBuilder<List<Widget>>(
+                    future: this.notes,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return RandomGrid(children: snapshot.data!, crossAxisCount: 16);
+                      } else {
+                        return Center(child: Text("Loading data"),);
+                      }
+                    },
                   ),
                 ),
                 flex: 8,
@@ -53,7 +85,7 @@ class MyHomePage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextboxPopupButton(
-                      onTextSubmit: addNote,
+                      onTextSubmit: addNewNote,
                       controller: controller,),
                     TrashCan(),
                   ],
@@ -66,16 +98,26 @@ class MyHomePage extends StatelessWidget {
     );
   }
 
-  /// Stub method to generate placeholder notes data
-  List<Widget> buildStubNotes() {
-    List<String> contents = [
-      "note 1",
-      "note 2",
-      "note 3",
-      "note 4",
-      "note 5",
-    ];
+  static Future<List<Widget>> fetchAllNotes() async {
+    final response = await http.get(getUri("notes/"));
+    List<dynamic> responseData = jsonDecode(response.body);
+    return responseData.map((noteData) => Note.fromJSON(noteData)).toList();
+  }
 
-    return List.generate(contents.length, (index) => Note(content: contents[index]));
+  /// Add a new note with given content to database
+  static Future<http.Response> addNote(String content) async {
+    return http.post(getUri("notes/"),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'content': content,
+      }),
+    );
+  }
+
+  /// Create uri for server with given endpoint
+  static Uri getUri(String endpoint) {
+    return Uri.parse("$SERVER_BASE_URL/$endpoint");
   }
 }

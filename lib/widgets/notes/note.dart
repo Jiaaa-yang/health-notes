@@ -6,7 +6,14 @@ class Note extends StatelessWidget {
   /// Text content for current note
   final String content;
 
-  const Note({Key? key, required this.content}) : super(key: key);
+  const Note({
+    Key? key,
+    required this.content,
+  }) : super(key: key);
+
+  factory Note.fromJSON(Map<String, dynamic> data) {
+    return Note(content: data['content']);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +21,7 @@ class Note extends StatelessWidget {
       builder: (context, constraints) => Draggable<String>(
         data: content,
         child: Container(
+          padding: EdgeInsets.all(5),
           child: Center(child: Text(content)),
           decoration: BoxDecoration(
             image: DecorationImage(
