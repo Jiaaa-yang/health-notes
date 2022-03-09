@@ -30,6 +30,14 @@ app.post('/notes', (req, res) => {
     res.sendStatus(200);
 })
 
+app.post('/delete/notes', (req, res) => {
+    let data = req.body;
+    db.run("DELETE FROM notes WHERE content = ?", [data.content], err => {
+        if(err) console.log(err);
+    })
+    res.sendStatus(200);
+})
+
 app.listen(PORT_NUMBER, () => {
     console.log(`Listening on port: ${PORT_NUMBER}`)
 });

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 /// Trash can serving as a drag target
 /// for disposal of notes
 class TrashCan extends StatelessWidget {
-  const TrashCan({Key? key}) : super(key: key);
+  final Function onAccept;
+
+  const TrashCan({Key? key, required this.onAccept}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +27,7 @@ class TrashCan extends StatelessWidget {
         );
       },
       onAccept: (String data) {
-        print(data);
+        onAccept(data);
       },
     );
   }
